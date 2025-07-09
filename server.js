@@ -71,6 +71,19 @@ app.use('/api/milk-purchases', require('./routes/milkPurchases'));
 app.use('/api/sales', require('./routes/sales'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 
+// Error handling middleware (must be last)
+const errorMiddleware = require('./middlewares/errorMiddleware');
+app.use(errorMiddleware);
+
+// 404 handler for undefined routes
+app.use('/*', (req, res) => {
+  res.status(404).json({
+    message: 'Route not found',
+    error: 'ROUTE_NOT_FOUND',
+    path: req.originalUrl
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
