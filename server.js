@@ -26,6 +26,10 @@ const swaggerOptions = {
         url: 'http://localhost:5000',
         description: 'Local server',
       },
+      {
+        url: 'https://daily-dairy-backend-production.up.railway.app',
+        description: 'Production server'
+      },
     ],
     components: {
       securitySchemes: {
@@ -59,6 +63,7 @@ app.get('/', (req, res) => {
  */
 // Mount modular routers for all entities
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/users', require('./routes/users'));
 app.use('/api/suppliers', require('./routes/suppliers'));
 app.use('/api/customers', require('./routes/customers'));
 app.use('/api/products', require('./routes/products'));

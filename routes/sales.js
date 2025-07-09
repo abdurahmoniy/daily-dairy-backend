@@ -2,12 +2,13 @@ const express = require('express');
 const router = express.Router();
 const saleController = require('../controllers/saleController');
 const authMiddleware = require('../middlewares/authMiddleware');
+const roleMiddleware = require('../middlewares/roleMiddleware');
 
 /**
  * @swagger
  * tags:
  *   name: Sales
- *   description: Sales management
+ *   description: Sale management
  */
 
 /**
@@ -50,7 +51,7 @@ router.get('/:id', authMiddleware, saleController.getSaleById);
  * @swagger
  * /api/sales:
  *   post:
- *     summary: Create a sale
+ *     summary: Create a sale (Manager/Admin only)
  *     tags: [Sales]
  *     security:
  *       - bearerAuth: []
@@ -63,14 +64,16 @@ router.get('/:id', authMiddleware, saleController.getSaleById);
  *     responses:
  *       201:
  *         description: Sale created
+ *       403:
+ *         description: Insufficient permissions
  */
-router.post('/', authMiddleware, saleController.createSale);
+router.post('/', authMiddleware, roleMiddleware(['MANAGER', 'ADMIN']), saleController.createSale);
 
 /**
  * @swagger
  * /api/sales/{id}:
  *   put:
- *     summary: Update a sale
+ *     summary: Update a sale (Manager/Admin only)
  *     tags: [Sales]
  *     security:
  *       - bearerAuth: []
@@ -89,14 +92,16 @@ router.post('/', authMiddleware, saleController.createSale);
  *     responses:
  *       200:
  *         description: Sale updated
+ *       403:
+ *         description: Insufficient permissions
  */
-router.put('/:id', authMiddleware, saleController.updateSale);
+router.put('/:id', authMiddleware, roleMiddleware(['MANAGER', 'ADMIN']), saleController.updateSale);
 
 /**
  * @swagger
  * /api/sales/{id}:
  *   delete:
- *     summary: Delete a sale
+ *     summary: Delete a sale (Manager/Admin only)
  *     tags: [Sales]
  *     security:
  *       - bearerAuth: []
@@ -109,7 +114,9 @@ router.put('/:id', authMiddleware, saleController.updateSale);
  *     responses:
  *       200:
  *         description: Sale deleted
+ *       403:
+ *         description: Insufficient permissions
  */
-router.delete('/:id', authMiddleware, saleController.deleteSale);
+router.delete('/:id', authMiddleware, roleMiddleware(['MANAGER', 'ADMIN']), saleController.deleteSale);
 
 module.exports = router;

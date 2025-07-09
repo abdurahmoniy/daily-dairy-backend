@@ -5,17 +5,17 @@ const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, role = 'USER' } = req.body;
     const existingUser = await prisma.user.findUnique({ where: { username } });
     if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { username, passwordHash: hashedPassword }
+      data: { username, passwordHash: hashedPassword, role }
     });
     res.status(201).json({
       message: 'User registered',
-      user: { id: user.id, username: user.username }
+      user: { id: user.id, username: user.username, role: user.role }
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -32,11 +32,14 @@ exports.login = async (req, res) => {
     if (!valid) return res.status(400).json({ message: 'Invalid credentials' });
 
     const token = jwt.sign(
-      { id: user.id, username: user.username },
+      { id: user.id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
-    res.json({ token });
+    res.json({ 
+      token,
+      user: { id: user.id, username: user.username, role: user.role }
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

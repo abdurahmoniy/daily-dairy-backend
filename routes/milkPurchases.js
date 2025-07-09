@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const purchaseController = require('../controllers/purchaseController');
 const authMiddleware = require('../middlewares/authMiddleware');
+const roleMiddleware = require('../middlewares/roleMiddleware');
 
 /**
  * @swagger
  * tags:
- *   name: MilkPurchases
+ *   name: Milk Purchases
  *   description: Milk purchase management
  */
 
@@ -15,12 +16,12 @@ const authMiddleware = require('../middlewares/authMiddleware');
  * /api/milk-purchases:
  *   get:
  *     summary: Get all milk purchases
- *     tags: [MilkPurchases]
+ *     tags: [Milk Purchases]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: List of purchases
+ *         description: List of milk purchases
  */
 router.get('/', authMiddleware, purchaseController.getAllPurchases);
 
@@ -28,8 +29,8 @@ router.get('/', authMiddleware, purchaseController.getAllPurchases);
  * @swagger
  * /api/milk-purchases/{id}:
  *   get:
- *     summary: Get purchase by ID
- *     tags: [MilkPurchases]
+ *     summary: Get milk purchase by ID
+ *     tags: [Milk Purchases]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -40,9 +41,9 @@ router.get('/', authMiddleware, purchaseController.getAllPurchases);
  *           type: integer
  *     responses:
  *       200:
- *         description: Purchase found
+ *         description: Milk purchase found
  *       404:
- *         description: Purchase not found
+ *         description: Milk purchase not found
  */
 router.get('/:id', authMiddleware, purchaseController.getPurchaseById);
 
@@ -50,8 +51,8 @@ router.get('/:id', authMiddleware, purchaseController.getPurchaseById);
  * @swagger
  * /api/milk-purchases:
  *   post:
- *     summary: Create a purchase
- *     tags: [MilkPurchases]
+ *     summary: Create a milk purchase (Manager/Admin only)
+ *     tags: [Milk Purchases]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -62,16 +63,18 @@ router.get('/:id', authMiddleware, purchaseController.getPurchaseById);
  *             type: object
  *     responses:
  *       201:
- *         description: Purchase created
+ *         description: Milk purchase created
+ *       403:
+ *         description: Insufficient permissions
  */
-router.post('/', authMiddleware, purchaseController.createPurchase);
+router.post('/', authMiddleware, roleMiddleware(['MANAGER', 'ADMIN']), purchaseController.createPurchase);
 
 /**
  * @swagger
  * /api/milk-purchases/{id}:
  *   put:
- *     summary: Update a purchase
- *     tags: [MilkPurchases]
+ *     summary: Update a milk purchase (Manager/Admin only)
+ *     tags: [Milk Purchases]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -88,16 +91,18 @@ router.post('/', authMiddleware, purchaseController.createPurchase);
  *             type: object
  *     responses:
  *       200:
- *         description: Purchase updated
+ *         description: Milk purchase updated
+ *       403:
+ *         description: Insufficient permissions
  */
-router.put('/:id', authMiddleware, purchaseController.updatePurchase);
+router.put('/:id', authMiddleware, roleMiddleware(['MANAGER', 'ADMIN']), purchaseController.updatePurchase);
 
 /**
  * @swagger
  * /api/milk-purchases/{id}:
  *   delete:
- *     summary: Delete a purchase
- *     tags: [MilkPurchases]
+ *     summary: Delete a milk purchase (Manager/Admin only)
+ *     tags: [Milk Purchases]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -108,8 +113,10 @@ router.put('/:id', authMiddleware, purchaseController.updatePurchase);
  *           type: integer
  *     responses:
  *       200:
- *         description: Purchase deleted
+ *         description: Milk purchase deleted
+ *       403:
+ *         description: Insufficient permissions
  */
-router.delete('/:id', authMiddleware, purchaseController.deletePurchase);
+router.delete('/:id', authMiddleware, roleMiddleware(['MANAGER', 'ADMIN']), purchaseController.deletePurchase);
 
 module.exports = router;

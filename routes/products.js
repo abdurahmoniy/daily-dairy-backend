@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
 const authMiddleware = require('../middlewares/authMiddleware');
+const roleMiddleware = require('../middlewares/roleMiddleware');
 
 /**
  * @swagger
@@ -50,7 +51,7 @@ router.get('/:id', authMiddleware, productController.getProductById);
  * @swagger
  * /api/products:
  *   post:
- *     summary: Create a product
+ *     summary: Create a product (Manager/Admin only)
  *     tags: [Products]
  *     security:
  *       - bearerAuth: []
@@ -63,14 +64,16 @@ router.get('/:id', authMiddleware, productController.getProductById);
  *     responses:
  *       201:
  *         description: Product created
+ *       403:
+ *         description: Insufficient permissions
  */
-router.post('/', authMiddleware, productController.createProduct);
+router.post('/', authMiddleware, roleMiddleware(['MANAGER', 'ADMIN']), productController.createProduct);
 
 /**
  * @swagger
  * /api/products/{id}:
  *   put:
- *     summary: Update a product
+ *     summary: Update a product (Manager/Admin only)
  *     tags: [Products]
  *     security:
  *       - bearerAuth: []
@@ -89,14 +92,16 @@ router.post('/', authMiddleware, productController.createProduct);
  *     responses:
  *       200:
  *         description: Product updated
+ *       403:
+ *         description: Insufficient permissions
  */
-router.put('/:id', authMiddleware, productController.updateProduct);
+router.put('/:id', authMiddleware, roleMiddleware(['MANAGER', 'ADMIN']), productController.updateProduct);
 
 /**
  * @swagger
  * /api/products/{id}:
  *   delete:
- *     summary: Delete a product
+ *     summary: Delete a product (Manager/Admin only)
  *     tags: [Products]
  *     security:
  *       - bearerAuth: []
@@ -109,7 +114,9 @@ router.put('/:id', authMiddleware, productController.updateProduct);
  *     responses:
  *       200:
  *         description: Product deleted
+ *       403:
+ *         description: Insufficient permissions
  */
-router.delete('/:id', authMiddleware, productController.deleteProduct);
+router.delete('/:id', authMiddleware, roleMiddleware(['MANAGER', 'ADMIN']), productController.deleteProduct);
 
 module.exports = router;

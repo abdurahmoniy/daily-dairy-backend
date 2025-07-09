@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const supplierController = require('../controllers/supplierController');
 const authMiddleware = require('../middlewares/authMiddleware');
+const roleMiddleware = require('../middlewares/roleMiddleware');
 
 /**
  * @swagger
@@ -50,7 +51,7 @@ router.get('/:id', authMiddleware, supplierController.getSupplierById);
  * @swagger
  * /api/suppliers:
  *   post:
- *     summary: Create a supplier
+ *     summary: Create a supplier (Manager/Admin only)
  *     tags: [Suppliers]
  *     security:
  *       - bearerAuth: []
@@ -63,14 +64,16 @@ router.get('/:id', authMiddleware, supplierController.getSupplierById);
  *     responses:
  *       201:
  *         description: Supplier created
+ *       403:
+ *         description: Insufficient permissions
  */
-router.post('/', authMiddleware, supplierController.createSupplier);
+router.post('/', authMiddleware, roleMiddleware(['MANAGER', 'ADMIN']), supplierController.createSupplier);
 
 /**
  * @swagger
  * /api/suppliers/{id}:
  *   put:
- *     summary: Update a supplier
+ *     summary: Update a supplier (Manager/Admin only)
  *     tags: [Suppliers]
  *     security:
  *       - bearerAuth: []
@@ -89,14 +92,16 @@ router.post('/', authMiddleware, supplierController.createSupplier);
  *     responses:
  *       200:
  *         description: Supplier updated
+ *       403:
+ *         description: Insufficient permissions
  */
-router.put('/:id', authMiddleware, supplierController.updateSupplier);
+router.put('/:id', authMiddleware, roleMiddleware(['MANAGER', 'ADMIN']), supplierController.updateSupplier);
 
 /**
  * @swagger
  * /api/suppliers/{id}:
  *   delete:
- *     summary: Delete a supplier
+ *     summary: Delete a supplier (Manager/Admin only)
  *     tags: [Suppliers]
  *     security:
  *       - bearerAuth: []
@@ -109,7 +114,9 @@ router.put('/:id', authMiddleware, supplierController.updateSupplier);
  *     responses:
  *       200:
  *         description: Supplier deleted
+ *       403:
+ *         description: Insufficient permissions
  */
-router.delete('/:id', authMiddleware, supplierController.deleteSupplier);
+router.delete('/:id', authMiddleware, roleMiddleware(['MANAGER', 'ADMIN']), supplierController.deleteSupplier);
 
 module.exports = router;

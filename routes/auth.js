@@ -26,6 +26,10 @@ const authController = require('../controllers/authController');
  *                 type: string
  *               password:
  *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [ADMIN, MANAGER, USER]
+ *                 default: USER
  *     responses:
  *       201:
  *         description: User registered

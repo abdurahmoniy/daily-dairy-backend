@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const customerController = require('../controllers/customerController');
 const authMiddleware = require('../middlewares/authMiddleware');
+const roleMiddleware = require('../middlewares/roleMiddleware');
 
 /**
  * @swagger
@@ -50,7 +51,7 @@ router.get('/:id', authMiddleware, customerController.getCustomerById);
  * @swagger
  * /api/customers:
  *   post:
- *     summary: Create a customer
+ *     summary: Create a customer (Manager/Admin only)
  *     tags: [Customers]
  *     security:
  *       - bearerAuth: []
@@ -63,14 +64,16 @@ router.get('/:id', authMiddleware, customerController.getCustomerById);
  *     responses:
  *       201:
  *         description: Customer created
+ *       403:
+ *         description: Insufficient permissions
  */
-router.post('/', authMiddleware, customerController.createCustomer);
+router.post('/', authMiddleware, roleMiddleware(['MANAGER', 'ADMIN']), customerController.createCustomer);
 
 /**
  * @swagger
  * /api/customers/{id}:
  *   put:
- *     summary: Update a customer
+ *     summary: Update a customer (Manager/Admin only)
  *     tags: [Customers]
  *     security:
  *       - bearerAuth: []
@@ -89,14 +92,16 @@ router.post('/', authMiddleware, customerController.createCustomer);
  *     responses:
  *       200:
  *         description: Customer updated
+ *       403:
+ *         description: Insufficient permissions
  */
-router.put('/:id', authMiddleware, customerController.updateCustomer);
+router.put('/:id', authMiddleware, roleMiddleware(['MANAGER', 'ADMIN']), customerController.updateCustomer);
 
 /**
  * @swagger
  * /api/customers/{id}:
  *   delete:
- *     summary: Delete a customer
+ *     summary: Delete a customer (Manager/Admin only)
  *     tags: [Customers]
  *     security:
  *       - bearerAuth: []
@@ -109,7 +114,9 @@ router.put('/:id', authMiddleware, customerController.updateCustomer);
  *     responses:
  *       200:
  *         description: Customer deleted
+ *       403:
+ *         description: Insufficient permissions
  */
-router.delete('/:id', authMiddleware, customerController.deleteCustomer);
+router.delete('/:id', authMiddleware, roleMiddleware(['MANAGER', 'ADMIN']), customerController.deleteCustomer);
 
 module.exports = router;
