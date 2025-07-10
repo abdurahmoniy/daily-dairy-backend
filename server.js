@@ -61,15 +61,17 @@ app.get('/', (req, res) => {
  *       200:
  *         description: List of suppliers
  */
+const sessionCheck = require('./middlewares/sessionCheck');
 // Mount modular routers for all entities
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/suppliers', require('./routes/suppliers'));
-app.use('/api/customers', require('./routes/customers'));
-app.use('/api/products', require('./routes/products'));
-app.use('/api/milk-purchases', require('./routes/milkPurchases'));
-app.use('/api/sales', require('./routes/sales'));
-app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/users', sessionCheck, require('./routes/users'));
+app.use('/api/suppliers', sessionCheck, require('./routes/suppliers'));
+app.use('/api/customers', sessionCheck, require('./routes/customers'));
+app.use('/api/products', sessionCheck, require('./routes/products'));
+app.use('/api/milk-purchases', sessionCheck, require('./routes/milkPurchases'));
+app.use('/api/sales', sessionCheck, require('./routes/sales'));
+app.use('/api/dashboard', sessionCheck, require('./routes/dashboard'));
+app.use('/api/session-logs', require('./routes/sessionLogs'));
 
 // Error handling middleware (must be last)
 const errorMiddleware = require('./middlewares/errorMiddleware');

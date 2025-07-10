@@ -14,55 +14,66 @@ enum UserRole {
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
-  username      String   @unique
-  passwordHash  String
-  role          UserRole @default(USER)
+  id           Int          @id @default(autoincrement())
+  username     String       @unique
+  passwordHash String
+  role         UserRole     @default(USER)
+  sessionLogs  SessionLog[] // <--- Add this line
 }
 
 model Supplier {
-  id     Int    @id @default(autoincrement())
-  name   String
-  phone  String?
-  notes  String?
+  id        Int            @id @default(autoincrement())
+  name      String
+  phone     String?
+  notes     String?
   purchases MilkPurchase[]
 }
 
 model Customer {
-  id     Int    @id @default(autoincrement())
-  name   String
-  type   String
-  phone  String?
-  notes  String?
-  sales  Sale[]
+  id    Int     @id @default(autoincrement())
+  name  String
+  type  String
+  phone String?
+  notes String?
+  sales Sale[]
 }
 
 model Product {
-  id            Int     @id @default(autoincrement())
-  name          String
-  unit          String
-  pricePerUnit  Float
-  sales         Sale[]
+  id           Int    @id @default(autoincrement())
+  name         String
+  unit         String
+  pricePerUnit Float
+  sales        Sale[]
 }
 
 model MilkPurchase {
-  id              Int       @id @default(autoincrement())
-  supplier        Supplier  @relation(fields: [supplierId], references: [id])
-  supplierId      Int
-  date            DateTime
-  quantityLiters  Float
-  pricePerLiter   Float
-  total           Float
+  id             Int      @id @default(autoincrement())
+  supplier       Supplier @relation(fields: [supplierId], references: [id])
+  supplierId     Int
+  date           DateTime
+  quantityLiters Float
+  pricePerLiter  Float
+  total          Float
 }
 
 model Sale {
-  id             Int      @id @default(autoincrement())
-  customer       Customer @relation(fields: [customerId], references: [id])
-  customerId     Int
-  product        Product  @relation(fields: [productId], references: [id])
-  productId      Int
-  date           DateTime
-  quantity       Float
-  pricePerUnit   Float
-  total          Float
+  id           Int      @id @default(autoincrement())
+  customer     Customer @relation(fields: [customerId], references: [id])
+  customerId   Int
+  product      Product  @relation(fields: [productId], references: [id])
+  productId    Int
+  date         DateTime
+  quantity     Float
+  pricePerUnit Float
+  total        Float
+}
+
+model SessionLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  token     String   @unique
+  ipAddress String
+  userAgent String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }

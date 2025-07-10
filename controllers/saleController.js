@@ -25,7 +25,10 @@ exports.getSaleById = async (req, res) => {
 
 exports.createSale = async (req, res) => {
   try {
-    const sale = await prisma.sale.create({ data: req.body });
+    const sale = await prisma.sale.create({
+      data: req.body,
+      include: { customer: true, product: true }
+    });
     res.status(201).json(sale);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -36,7 +39,8 @@ exports.updateSale = async (req, res) => {
   try {
     const sale = await prisma.sale.update({
       where: { id: Number(req.params.id) },
-      data: req.body
+      data: req.body,
+      include: { customer: true, product: true }
     });
     res.json(sale);
   } catch (err) {

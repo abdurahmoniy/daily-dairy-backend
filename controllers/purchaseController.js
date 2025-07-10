@@ -25,7 +25,10 @@ exports.getPurchaseById = async (req, res) => {
 
 exports.createPurchase = async (req, res) => {
   try {
-    const purchase = await prisma.milkPurchase.create({ data: req.body });
+    const purchase = await prisma.milkPurchase.create({
+      data: req.body,
+      include: { supplier: true }
+    });
     res.status(201).json(purchase);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -36,7 +39,8 @@ exports.updatePurchase = async (req, res) => {
   try {
     const purchase = await prisma.milkPurchase.update({
       where: { id: Number(req.params.id) },
-      data: req.body
+      data: req.body,
+      include: { supplier: true }
     });
     res.json(purchase);
   } catch (err) {

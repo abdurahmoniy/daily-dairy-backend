@@ -104,6 +104,20 @@ exports.login = async (req, res) => {
       { expiresIn: '1d' }
     );
     
+    // Log the session
+    try {
+      await prisma.sessionLog.create({
+        data: {
+          userId: user.id,
+          token,
+          ipAddress: req.ip,
+          userAgent: req.headers['user-agent'] || ''
+        }
+      });
+    } catch (logErr) {
+      console.error('Session log error:', logErr);
+    }
+    
     res.json({ 
       message: 'Login successful',
       token,
