@@ -18,7 +18,7 @@ model User {
   username     String       @unique
   passwordHash String
   role         UserRole     @default(USER)
-  sessionLogs  SessionLog[] // <--- Add this line
+  sessionLogs  SessionLog[]
 }
 
 model Supplier {
