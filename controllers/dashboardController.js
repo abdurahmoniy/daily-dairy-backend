@@ -148,6 +148,46 @@ exports.getDashboard = async (req, res) => {
         }
       });
 
+      // Get product information for sales to determine units
+      const salesWithProducts = await prisma.sale.findMany({
+        where: dateFilter,
+        include: {
+          product: {
+            select: {
+              id: true,
+              name: true,
+              unit: true
+            }
+          }
+        }
+      });
+
+      // Group sales by date and calculate total quantity by unit type
+      const salesByDate = {};
+      salesWithProducts.forEach(sale => {
+        const dateKey = sale.date.toISOString().split('T')[0];
+        if (!salesByDate[dateKey]) {
+          salesByDate[dateKey] = {
+            totalLiters: 0,
+            totalKg: 0,
+            totalUnits: 0,
+            totalQuantity: 0
+          };
+        }
+        
+        // Add to appropriate unit category
+        if (sale.product.unit.toLowerCase() === 'liter' || sale.product.unit.toLowerCase() === 'litr') {
+          salesByDate[dateKey].totalLiters += sale.quantity;
+        } else if (sale.product.unit.toLowerCase() === 'kg' || sale.product.unit.toLowerCase() === 'kilogram') {
+          salesByDate[dateKey].totalKg += sale.quantity;
+        } else {
+          salesByDate[dateKey].totalUnits += sale.quantity;
+        }
+        
+        // Also keep track of total quantity for general display
+        salesByDate[dateKey].totalQuantity += sale.quantity;
+      });
+
       // 4. Supplier Breakdown
       const supplierBreakdown = await prisma.milkPurchase.groupBy({
         by: ['supplierId'],
@@ -206,11 +246,11 @@ exports.getDashboard = async (req, res) => {
       const productIds = productBreakdown.map(item => item.productId);
       const products = await prisma.product.findMany({
         where: { id: { in: productIds } },
-        select: { id: true, name: true }
+        select: { id: true, name: true, unit: true }
       });
 
       const productMap = products.reduce((acc, product) => {
-        acc[product.id] = product.name;
+        acc[product.id] = { name: product.name, unit: product.unit };
         return acc;
       }, {});
 
@@ -231,9 +271,12 @@ exports.getDashboard = async (req, res) => {
           date: item.date.toISOString().split('T')[0],
           totalLiters: item._sum.quantityLiters
         })),
-        salesOverTime: salesOverTime.map(item => ({
-          date: item.date.toISOString().split('T')[0],
-          totalLiters: item._sum.quantity
+        salesOverTime: Object.entries(salesByDate).map(([date, data]) => ({
+          date: date,
+          totalLiters: data.totalLiters,
+          totalKg: data.totalKg,
+          totalUnits: data.totalUnits,
+          totalQuantity: data.totalQuantity
         })),
         supplierBreakdown: supplierBreakdown.map(item => ({
           supplierId: item.supplierId,
@@ -249,7 +292,8 @@ exports.getDashboard = async (req, res) => {
         })),
         productBreakdown: productBreakdown.map(item => ({
           productId: item.productId,
-          productName: productMap[item.productId] || 'Unknown Product',
+          productName: productMap[item.productId]?.name || 'Unknown Product',
+          productUnit: productMap[item.productId]?.unit || 'Unknown Unit',
           unitsSold: item._sum.quantity,
           totalRevenue: item._sum.total
         }))
@@ -375,11 +419,11 @@ exports.getAllTimeAnalytics = async (req, res) => {
       const productIds = productBreakdown.map(item => item.productId);
       const products = await prisma.product.findMany({
         where: { id: { in: productIds } },
-        select: { id: true, name: true }
+        select: { id: true, name: true, unit: true }
       });
 
       const productMap = products.reduce((acc, product) => {
-        acc[product.id] = product.name;
+        acc[product.id] = { name: product.name, unit: product.unit };
         return acc;
       }, {});
 
@@ -463,7 +507,8 @@ exports.getAllTimeAnalytics = async (req, res) => {
         })),
         productBreakdown: productBreakdown.map(item => ({
           productId: item.productId,
-          productName: productMap[item.productId] || 'Unknown Product',
+          productName: productMap[item.productId]?.name || 'Unknown Product',
+          productUnit: productMap[item.productId]?.unit || 'Unknown Unit',
           unitsSold: item._sum.quantity,
           totalRevenue: item._sum.total,
           totalTransactions: item._count.id,
