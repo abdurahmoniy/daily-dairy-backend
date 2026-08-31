@@ -3,6 +3,7 @@ const prisma = new PrismaClient();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { getRequestIpAddress } = require('../utils/requestMetadata');
+const { AUTH_TOKEN_EXPIRES_IN } = require('../utils/authToken');
 
 exports.register = async (req, res) => {
   try {
@@ -102,7 +103,7 @@ exports.login = async (req, res) => {
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: '1d' }
+      { expiresIn: AUTH_TOKEN_EXPIRES_IN }
     );
     
     // Log the session
