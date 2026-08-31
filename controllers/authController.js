@@ -2,6 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { getRequestIpAddress } = require('../utils/requestMetadata');
 
 exports.register = async (req, res) => {
   try {
@@ -110,7 +111,7 @@ exports.login = async (req, res) => {
         data: {
           userId: user.id,
           token,
-          ipAddress: req.ip,
+          ipAddress: getRequestIpAddress(req),
           userAgent: req.headers['user-agent'] || ''
         }
       });
@@ -131,4 +132,3 @@ exports.login = async (req, res) => {
     });
   }
 };
-

@@ -1,10 +1,11 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { getRequestIpAddress } = require('../utils/requestMetadata');
 
 // Create session log on login
 exports.createSession = async (req, res) => {
   const { userId, token } = req.body;
-  const ipAddress = req.ip;
+  const ipAddress = getRequestIpAddress(req);
   const userAgent = req.headers['user-agent'] || '';
   try {
     const session = await prisma.sessionLog.create({
