@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const { getAverage, summarizeSalesByUnit } = require('../utils/metrics');
 const prisma = new PrismaClient();
 
 exports.getSummary = async (req, res) => {
@@ -120,9 +121,9 @@ exports.getDashboard = async (req, res) => {
 
       const totalMilkPurchased = purchasesSummary._sum.quantityLiters || 0;
       const totalPurchaseCost = purchasesSummary._sum.total || 0;
-      const totalMilkSold = salesSummary._sum.quantity || 0;
       const totalSalesRevenue = salesSummary._sum.total || 0;
       const grossProfit = totalSalesRevenue - totalPurchaseCost;
+      const averagePurchasePricePerLiter = getAverage(totalPurchaseCost, totalMilkPurchased);
 
       // 2. Purchases Over Time (grouped by date)
       const purchasesOverTime = await prisma.milkPurchase.groupBy({
@@ -187,6 +188,17 @@ exports.getDashboard = async (req, res) => {
         // Also keep track of total quantity for general display
         salesByDate[dateKey].totalQuantity += sale.quantity;
       });
+
+      const salesQuantityByUnit = summarizeSalesByUnit(salesWithProducts);
+      const literSales = salesQuantityByUnit.find(item => item.unit === 'Litr');
+      const totalMilkSold = literSales?.quantity || 0;
+      const totalSalesQuantity = salesQuantityByUnit.reduce((sum, item) => sum + item.quantity, 0);
+      const averageSalesPricePerLiter = getAverage(literSales?.revenue || 0, literSales?.quantity || 0);
+      const salesByCustomer = salesWithProducts.reduce((acc, sale) => {
+        if (!acc[sale.customerId]) acc[sale.customerId] = [];
+        acc[sale.customerId].push(sale);
+        return acc;
+      }, {});
 
       // 4. Supplier Breakdown
       const supplierBreakdown = await prisma.milkPurchase.groupBy({
@@ -263,9 +275,13 @@ exports.getDashboard = async (req, res) => {
         summary: {
           totalMilkPurchased,
           totalMilkSold,
+          totalSalesQuantity,
           totalPurchaseCost,
           totalSalesRevenue,
-          grossProfit
+          grossProfit,
+          averagePurchasePricePerLiter,
+          averageSalesPricePerLiter,
+          salesQuantityByUnit
         },
         purchasesOverTime: purchasesOverTime.map(item => ({
           date: item.date.toISOString().split('T')[0],
@@ -288,6 +304,7 @@ exports.getDashboard = async (req, res) => {
           customerId: item.customerId,
           customerName: customerMap[item.customerId] || 'Unknown Customer',
           totalLitersBought: item._sum.quantity,
+          salesQuantityByUnit: summarizeSalesByUnit(salesByCustomer[item.customerId] || []),
           totalRevenue: item._sum.total
         })),
         productBreakdown: productBreakdown.map(item => ({
@@ -351,9 +368,9 @@ exports.getAllTimeAnalytics = async (req, res) => {
 
       const totalMilkPurchased = purchasesSummary._sum.quantityLiters || 0;
       const totalPurchaseCost = purchasesSummary._sum.total || 0;
-      const totalMilkSold = salesSummary._sum.quantity || 0;
       const totalSalesRevenue = salesSummary._sum.total || 0;
       const grossProfit = totalSalesRevenue - totalPurchaseCost;
+      const averagePurchasePricePerLiter = getAverage(totalPurchaseCost, totalMilkPurchased);
 
       // 2. All-time Supplier Breakdown
       const supplierBreakdown = await prisma.milkPurchase.groupBy({
@@ -427,6 +444,28 @@ exports.getAllTimeAnalytics = async (req, res) => {
         return acc;
       }, {});
 
+      const allSalesWithProducts = await prisma.sale.findMany({
+        include: {
+          product: {
+            select: {
+              id: true,
+              name: true,
+              unit: true
+            }
+          }
+        }
+      });
+      const salesQuantityByUnit = summarizeSalesByUnit(allSalesWithProducts);
+      const literSales = salesQuantityByUnit.find(item => item.unit === 'Litr');
+      const totalMilkSold = literSales?.quantity || 0;
+      const totalSalesQuantity = salesQuantityByUnit.reduce((sum, item) => sum + item.quantity, 0);
+      const averageSalesPricePerLiter = getAverage(literSales?.revenue || 0, literSales?.quantity || 0);
+      const salesByCustomer = allSalesWithProducts.reduce((acc, sale) => {
+        if (!acc[sale.customerId]) acc[sale.customerId] = [];
+        acc[sale.customerId].push(sale);
+        return acc;
+      }, {});
+
       // 5. Monthly Trends (last 12 months)
       const twelveMonthsAgo = new Date();
       twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
@@ -485,9 +524,13 @@ exports.getAllTimeAnalytics = async (req, res) => {
         summary: {
           totalMilkPurchased,
           totalMilkSold,
+          totalSalesQuantity,
           totalPurchaseCost,
           totalSalesRevenue,
-          grossProfit
+          grossProfit,
+          averagePurchasePricePerLiter,
+          averageSalesPricePerLiter,
+          salesQuantityByUnit
         },
         supplierBreakdown: supplierBreakdown.map(item => ({
           supplierId: item.supplierId,
@@ -501,6 +544,7 @@ exports.getAllTimeAnalytics = async (req, res) => {
           customerId: item.customerId,
           customerName: customerMap[item.customerId] || 'Unknown Customer',
           totalLitersBought: item._sum.quantity,
+          salesQuantityByUnit: summarizeSalesByUnit(salesByCustomer[item.customerId] || []),
           totalRevenue: item._sum.total,
           totalTransactions: item._count.id,
           averagePricePerLiter: item._sum.total / item._sum.quantity

@@ -1,5 +1,19 @@
 const { PrismaClient } = require('@prisma/client');
+const { calculateLineTotal } = require('../utils/metrics');
 const prisma = new PrismaClient();
+
+function buildPurchaseData(body) {
+  const data = { ...body };
+
+  if (body.supplierId !== undefined) data.supplierId = Number(body.supplierId);
+  if (body.quantityLiters !== undefined) data.quantityLiters = Number(body.quantityLiters);
+  if (body.pricePerLiter !== undefined) data.pricePerLiter = Number(body.pricePerLiter);
+  if (data.quantityLiters !== undefined && data.pricePerLiter !== undefined) {
+    data.total = calculateLineTotal(data.quantityLiters, data.pricePerLiter);
+  }
+
+  return data;
+}
 
 exports.getAllPurchases = async (req, res) => {
   try {
@@ -26,7 +40,7 @@ exports.getPurchaseById = async (req, res) => {
 exports.createPurchase = async (req, res) => {
   try {
     const purchase = await prisma.milkPurchase.create({
-      data: req.body,
+      data: buildPurchaseData(req.body),
       include: { supplier: true }
     });
     res.status(201).json(purchase);
@@ -39,7 +53,7 @@ exports.updatePurchase = async (req, res) => {
   try {
     const purchase = await prisma.milkPurchase.update({
       where: { id: Number(req.params.id) },
-      data: req.body,
+      data: buildPurchaseData(req.body),
       include: { supplier: true }
     });
     res.json(purchase);
