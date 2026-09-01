@@ -26,7 +26,7 @@ const UNIT_LABELS = {
 const UNIT_ORDER = ['Litr', 'Kg', 'Dona', 'Paket', 'Shisha', 'Karton', 'Gramm', 'Tonna'];
 
 function toNumber(value) {
-  const number = Number(value);
+  const number = Number(String(value ?? '').trim().replace(',', '.'));
   return Number.isFinite(number) ? number : 0;
 }
 
@@ -80,5 +80,6 @@ module.exports = {
   calculateLineTotal,
   getAverage,
   normalizeUnit,
-  summarizeSalesByUnit
+  summarizeSalesByUnit,
+  toNumber
 };

@@ -11,6 +11,10 @@ test('calculateLineTotal returns quantity multiplied by price rounded to two dec
   assert.equal(calculateLineTotal(12.345, 4567.891), 56390.61);
 });
 
+test('calculateLineTotal accepts comma decimal quantities', () => {
+  assert.equal(calculateLineTotal('1,5', 7000), 10500);
+});
+
 test('getAverage returns zero when the denominator is empty', () => {
   assert.equal(getAverage(100000, 0), 0);
 });

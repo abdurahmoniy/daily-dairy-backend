@@ -1,5 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
-const { calculateLineTotal } = require('../utils/metrics');
+const { calculateLineTotal, toNumber } = require('../utils/metrics');
 const prisma = new PrismaClient();
 
 function buildSaleData(body) {
@@ -7,8 +7,8 @@ function buildSaleData(body) {
 
   if (body.customerId !== undefined) data.customerId = Number(body.customerId);
   if (body.productId !== undefined) data.productId = Number(body.productId);
-  if (body.quantity !== undefined) data.quantity = Number(body.quantity);
-  if (body.pricePerUnit !== undefined) data.pricePerUnit = Number(body.pricePerUnit);
+  if (body.quantity !== undefined) data.quantity = toNumber(body.quantity);
+  if (body.pricePerUnit !== undefined) data.pricePerUnit = toNumber(body.pricePerUnit);
   if (data.quantity !== undefined && data.pricePerUnit !== undefined) {
     data.total = calculateLineTotal(data.quantity, data.pricePerUnit);
   }
