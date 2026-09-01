@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../utils/prisma');
 const { getRequestIpAddress } = require('../utils/requestMetadata');
 
 // Create session log on login

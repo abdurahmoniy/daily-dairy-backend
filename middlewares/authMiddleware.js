@@ -1,7 +1,6 @@
 // dairy-backend/middlewares/authMiddleware.js
 const jwt = require('jsonwebtoken');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../utils/prisma');
 
 const authMiddleware = async (req, res, next) => {
   const authHeader = req.headers['authorization'];

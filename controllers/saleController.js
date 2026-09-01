@@ -1,6 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../utils/prisma');
 const { calculateLineTotal, toNumber } = require('../utils/metrics');
-const prisma = new PrismaClient();
 
 function buildSaleData(body) {
   const data = { ...body };

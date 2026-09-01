@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../utils/prisma');
 
 module.exports = async function sessionCheck(req, res, next) {
   // Assume token is in Authorization: Bearer <token>

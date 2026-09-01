@@ -1,6 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../utils/prisma');
 const { calculateLineTotal, toNumber } = require('../utils/metrics');
-const prisma = new PrismaClient();
 
 function buildPurchaseData(body) {
   const data = { ...body };
@@ -40,8 +39,7 @@ exports.getPurchaseById = async (req, res) => {
 exports.createPurchase = async (req, res) => {
   try {
     const purchase = await prisma.milkPurchase.create({
-      data: buildPurchaseData(req.body),
-      include: { supplier: true }
+      data: buildPurchaseData(req.body)
     });
     res.status(201).json(purchase);
   } catch (err) {
@@ -53,8 +51,7 @@ exports.updatePurchase = async (req, res) => {
   try {
     const purchase = await prisma.milkPurchase.update({
       where: { id: Number(req.params.id) },
-      data: buildPurchaseData(req.body),
-      include: { supplier: true }
+      data: buildPurchaseData(req.body)
     });
     res.json(purchase);
   } catch (err) {

@@ -1,6 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../utils/prisma');
 const { getAverage, summarizeSalesByUnit } = require('../utils/metrics');
-const prisma = new PrismaClient();
 
 exports.getSummary = async (req, res) => {
   try {
