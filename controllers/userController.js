@@ -239,16 +239,7 @@ exports.deleteUser = async (req, res) => {
 
 exports.getCurrentUser = async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
-      select: {
-        id: true,
-        username: true,
-        role: true,
-      }
-    });
-    
-    if (!user) {
+    if (!req.user) {
       return res.status(404).json({ 
         message: 'Current user not found',
         error: 'CURRENT_USER_NOT_FOUND'
@@ -257,7 +248,11 @@ exports.getCurrentUser = async (req, res) => {
     
     res.json({
       message: 'Current user retrieved successfully',
-      user
+      user: {
+        id: req.user.id,
+        username: req.user.username,
+        role: req.user.role,
+      }
     });
   } catch (err) {
     console.error('Get current user error:', err);
